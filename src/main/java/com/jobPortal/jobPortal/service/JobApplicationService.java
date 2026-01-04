@@ -84,7 +84,6 @@ public class JobApplicationService {
         jobApplicantDetails.setAppliedAt(app.getAppliedAt());
         jobApplicantDetails.setRecruiterEmail(job.getCreatedBy().getUserName());
 
-        // Optional: notify recruiter/email, publish event, etc.
         kafkaTemplate.send("job-applications", job.getCreatedBy().getUserName(), jobApplicantDetails);
         return saved;
     }
