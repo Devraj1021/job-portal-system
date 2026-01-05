@@ -2,7 +2,9 @@ package com.jobPortal.jobPortal.config;
 
 import com.jobPortal.jobPortal.filter.JwtFilter;
 import com.jobPortal.jobPortal.service.UserDetailsServiceImpl;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

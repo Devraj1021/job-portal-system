@@ -8,7 +8,9 @@ import com.jobPortal.jobPortal.repository.JobApplicationRepository;
 import com.jobPortal.jobPortal.repository.JobRepository;
 import com.jobPortal.jobPortal.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class JobService {
@@ -26,6 +29,9 @@ public class JobService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private RedisService redisService;
 
     // can be accessed by both recruiter and job_seeker
     // get job by id
@@ -115,9 +121,15 @@ public class JobService {
     }
 
     public Page<Job> list(String title, String location, String company, Pageable pageable) {
+        List<Job> jobs = redisService.get("jobs", List.class);
+        if (jobs != null) {
+            return new PageImpl<>(jobs, pageable, jobs.size());
+        }
+
         if ((title == null || title.isBlank()) &&
                 (location == null || location.isBlank()) &&
                 (company == null || company.isBlank())) {
+            redisService.set("jobs", jobRepository.findByIsActiveTrue(pageable).toList(), 300l);
             return jobRepository.findByIsActiveTrue(pageable);
         }
 
